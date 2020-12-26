@@ -1,8 +1,8 @@
 import { MikroORM } from '@mikro-orm/core';
 import path from 'path';
-import { IS_PRODUCTION_MODE } from './constants';
-import { Post } from './entities/Post';
-import { User } from './entities/User';
+import { IS_PRODUCTION_MODE } from 'utils/constants';
+import { Post } from 'entities/Post';
+import { User } from 'entities/User';
 
 export default {
   migrations: {

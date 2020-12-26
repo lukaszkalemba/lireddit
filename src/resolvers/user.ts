@@ -6,10 +6,11 @@ import {
   Field,
   Ctx,
   ObjectType,
+  Query,
 } from 'type-graphql';
 import argon2 from 'argon2';
-import { Context } from '../types';
-import { User } from '../entities/User';
+import { Context } from 'utils/types';
+import { User } from 'entities/User';
 
 @InputType()
 class UsernamePasswordInput {
@@ -37,10 +38,19 @@ class UserResponse {
 
 @Resolver()
 export class UserResolver {
+  @Query(() => User, { nullable: true })
+  async me(@Ctx() { em, req }: Context): Promise<User | null> {
+    if (!req.session.userId) {
+      return null;
+    }
+
+    return em.findOne(User, { id: req.session.userId });
+  }
+
   @Mutation(() => UserResponse)
   async registerUser(
     @Arg('options') { username, password }: UsernamePasswordInput,
-    @Ctx() { em }: Context
+    @Ctx() { em, req }: Context
   ): Promise<UserResponse> {
     let user = await em.findOne(User, { username });
 
@@ -82,13 +92,15 @@ export class UserResolver {
     user = em.create(User, { username, password: hashedPassword });
     await em.persistAndFlush(user);
 
+    req.session.userId = user.id;
+
     return { user };
   }
 
   @Mutation(() => UserResponse)
   async loginUser(
     @Arg('options') { username, password }: UsernamePasswordInput,
-    @Ctx() { em }: Context
+    @Ctx() { em, req }: Context
   ): Promise<UserResponse> {
     const user = await em.findOne(User, { username });
 
@@ -115,6 +127,8 @@ export class UserResolver {
         ],
       };
     }
+
+    req.session.userId = user.id;
 
     return { user };
   }

@@ -1,11 +1,18 @@
 import { MikroORM } from '@mikro-orm/core';
 import express, { Application } from 'express';
+import dotenv from 'dotenv';
 import { ApolloServer } from 'apollo-server-express';
 import { buildSchema } from 'type-graphql';
-import microOrmConfig from './mikro-orm.config';
-import { PostResolver } from './resolvers/post';
-import { UserResolver } from './resolvers/user';
+import redis from 'redis';
+import session from 'express-session';
+import connectRedis from 'connect-redis';
+import microOrmConfig from 'config/mikro-orm.config';
+import { IS_PRODUCTION_MODE } from 'utils/constants';
+import { PostResolver } from 'resolvers/post';
+import { UserResolver } from 'resolvers/user';
 import 'reflect-metadata';
+
+dotenv.config({ path: 'config/config.env' });
 
 const main = async () => {
   const orm = await MikroORM.init(microOrmConfig);
@@ -13,12 +20,34 @@ const main = async () => {
 
   const app: Application = express();
 
+  const RedisStore = connectRedis(session);
+  const redisClient = redis.createClient();
+
+  app.use(
+    session({
+      name: 'qid',
+      store: new RedisStore({
+        client: redisClient,
+        disableTouch: true,
+      }),
+      cookie: {
+        maxAge: 1000 * 60 * 60 * 24 * 365 * 10,
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: IS_PRODUCTION_MODE,
+      },
+      secret: 'AfrGtkBvlc36hsJerty90tru4ewj3rKlTgfdjh1wdefpgjfbvKlSwgdB',
+      saveUninitialized: false,
+      resave: false,
+    })
+  );
+
   const apolloServer = new ApolloServer({
     schema: await buildSchema({
       resolvers: [PostResolver, UserResolver],
       validate: false,
     }),
-    context: () => ({ em: orm.em }),
+    context: ({ req, res }) => ({ em: orm.em, req, res }),
   });
 
   apolloServer.applyMiddleware({ app });
