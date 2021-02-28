@@ -1,9 +1,13 @@
 import { AppProps } from 'next/app';
-import 'tailwindcss/tailwind.css';
-import '../styles/globals.css';
+import { ChakraProvider } from '@chakra-ui/react';
+import theme from '../theme';
 
-function App({ Component, pageProps }: AppProps) {
-  return <Component {...pageProps} />;
+function MyApp({ Component, pageProps }: AppProps) {
+  return (
+    <ChakraProvider resetCSS theme={theme}>
+      <Component {...pageProps} />
+    </ChakraProvider>
+  );
 }
 
-export default App;
+export default MyApp;

@@ -1,16 +1,3 @@
-import Head from 'next/head';
+const Index = () => <div>index.tsx</div>;
 
-export default function Home() {
-  return (
-    <div>
-      <Head>
-        <title>Create Next App</title>
-        <link rel='icon' href='/favicon.ico' />
-      </Head>
-
-      <main>
-        <h1>hello world</h1>
-      </main>
-    </div>
-  );
-}
+export default Index;
