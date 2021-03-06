@@ -7,7 +7,7 @@ import { buildSchema } from 'type-graphql';
 import redis from 'redis';
 import session from 'express-session';
 import connectRedis from 'connect-redis';
-import microOrmConfig from 'config/mikro-orm.config';
+import microOrmConfig from 'mikro-orm.config';
 import { IS_PRODUCTION_MODE } from 'utils/constants';
 import { PostResolver } from 'resolvers/post';
 import { UserResolver } from 'resolvers/user';
