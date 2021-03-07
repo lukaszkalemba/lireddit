@@ -4,6 +4,7 @@ import { cacheExchange, QueryInput, Cache } from '@urql/exchange-graphcache';
 import { ChakraProvider } from '@chakra-ui/react';
 import {
   LoginMutation,
+  LogoutMutation,
   MeDocument,
   MeQuery,
   RegisterMutation,
@@ -29,13 +30,21 @@ const client = createClient({
     cacheExchange({
       updates: {
         Mutation: {
+          logout: (_result, args, cache, info) => {
+            updateQuery<LogoutMutation, MeQuery>(
+              cache,
+              { query: MeDocument },
+              _result,
+              () => ({ me: null })
+            );
+          },
           loginUser: (_result, args, cache, info) => {
             updateQuery<LoginMutation, MeQuery>(
               cache,
               { query: MeDocument },
               _result,
               (result, query) => {
-                if (result.loginUser.user) {
+                if (result.loginUser.errors) {
                   return query;
                 } else {
                   return {
@@ -51,7 +60,7 @@ const client = createClient({
               { query: MeDocument },
               _result,
               (result, query) => {
-                if (result.registerUser.user) {
+                if (result.registerUser.errors) {
                   return query;
                 } else {
                   return {

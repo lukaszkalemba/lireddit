@@ -9,6 +9,7 @@ import {
   Query,
 } from 'type-graphql';
 import argon2 from 'argon2';
+import { COOKIE_NAME } from 'utils/constants';
 import { Context } from 'utils/types';
 import { User } from 'entities/User';
 
@@ -131,5 +132,20 @@ export class UserResolver {
     req.session.userId = user.id;
 
     return { user };
+  }
+
+  @Mutation(() => Boolean)
+  logout(@Ctx() { req, res }: Context) {
+    return new Promise((resolve) =>
+      req.session.destroy((err) => {
+        res.clearCookie(COOKIE_NAME);
+        if (err) {
+          resolve(false);
+          return;
+        }
+
+        resolve(true);
+      })
+    );
   }
 }

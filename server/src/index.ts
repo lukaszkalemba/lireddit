@@ -8,7 +8,7 @@ import redis from 'redis';
 import session from 'express-session';
 import connectRedis from 'connect-redis';
 import microOrmConfig from 'mikro-orm.config';
-import { IS_PRODUCTION_MODE } from 'utils/constants';
+import { COOKIE_NAME, IS_PRODUCTION_MODE } from 'utils/constants';
 import { PostResolver } from 'resolvers/post';
 import { UserResolver } from 'resolvers/user';
 import 'reflect-metadata';
@@ -28,7 +28,7 @@ const main = async () => {
 
   app.use(
     session({
-      name: 'qid',
+      name: COOKIE_NAME,
       store: new RedisStore({
         client: redisClient,
         disableTouch: true,
