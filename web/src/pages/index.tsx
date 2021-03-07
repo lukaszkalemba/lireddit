@@ -1,3 +1,9 @@
-const Index = () => <div>index.tsx</div>;
+import NavBar from 'components/Navbar';
+
+const Index = () => (
+  <div>
+    <NavBar />
+  </div>
+);
 
 export default Index;
