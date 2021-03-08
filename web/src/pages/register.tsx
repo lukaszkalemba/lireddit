@@ -1,12 +1,14 @@
 import { useRouter } from 'next/router';
+import { withUrqlClient } from 'next-urql';
 import { Formik, Form } from 'formik';
 import { Box, Button } from '@chakra-ui/react';
 import { useRegisterMutation } from 'generated/graphql';
+import { createUrqlClient } from 'utils/createUrqlClient';
 import { toErrorMap } from 'utils/toErrorMap';
 import Wrapper from 'components/Wrapper';
 import InputField from 'components/InputField';
 
-const register = () => {
+const Register = () => {
   const router = useRouter();
   const [, register] = useRegisterMutation();
 
@@ -55,4 +57,4 @@ const register = () => {
   );
 };
 
-export default register;
+export default withUrqlClient(createUrqlClient)(Register);
