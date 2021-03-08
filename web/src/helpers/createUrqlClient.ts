@@ -7,7 +7,7 @@ import {
   MeQuery,
   RegisterMutation,
 } from 'generated/graphql';
-import { updateQuery } from 'utils/updateQuery';
+import { updateQuery } from 'helpers/updateQuery';
 
 export const createUrqlClient = (ssrExchange: any) => ({
   url: 'http://localhost:5000/graphql',
