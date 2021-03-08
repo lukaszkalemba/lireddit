@@ -1,4 +1,6 @@
-import NavBar from 'components/Navbar';
+import { withUrqlClient } from 'next-urql';
+import NavBar from 'components/NavBar';
+import { createUrqlClient } from 'utils/createUrqlClient';
 
 const Index = () => (
   <div>
@@ -6,4 +8,4 @@ const Index = () => (
   </div>
 );
 
-export default Index;
+export default withUrqlClient(createUrqlClient)(Index);
