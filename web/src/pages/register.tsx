@@ -15,7 +15,7 @@ const Register = () => {
   return (
     <Wrapper variant='small'>
       <Formik
-        initialValues={{ username: '', password: '' }}
+        initialValues={{ email: '', username: '', password: '' }}
         onSubmit={async (values, { setErrors }) => {
           const { data } = await register(values);
 
@@ -28,11 +28,14 @@ const Register = () => {
       >
         {({ isSubmitting }) => (
           <Form>
-            <InputField
-              name='username'
-              label='Username'
-              placeholder='username'
-            />
+            <InputField name='email' label='Email' placeholder='email' />
+            <Box marginTop={3}>
+              <InputField
+                name='username'
+                label='Username'
+                placeholder='username'
+              />
+            </Box>
             <Box marginTop={3}>
               <InputField
                 type='password'
