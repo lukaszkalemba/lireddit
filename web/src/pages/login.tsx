@@ -1,7 +1,8 @@
 import { useRouter } from 'next/router';
+import NextLink from 'next/link';
 import { withUrqlClient } from 'next-urql';
 import { Formik, Form } from 'formik';
-import { Box, Button } from '@chakra-ui/react';
+import { Box, Button, Flex, Link } from '@chakra-ui/react';
 import { useLoginMutation } from 'generated/graphql';
 import { createUrqlClient } from 'helpers/createUrqlClient';
 import { toErrorMap } from 'helpers/toErrorMap';
@@ -40,6 +41,13 @@ const Login = () => {
                 placeholder='password'
               />
             </Box>
+            <Flex>
+              <NextLink href='/forgot-password'>
+                <Link ml='auto' mt='1'>
+                  forgot password?
+                </Link>
+              </NextLink>
+            </Flex>
             <Button
               type='submit'
               colorScheme='teal'
