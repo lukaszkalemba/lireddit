@@ -1,3 +1,4 @@
+import { getConnection } from 'typeorm';
 import {
   Resolver,
   Arg,
@@ -38,7 +39,7 @@ export class UserResolver {
   async changePassword(
     @Arg('token') token: string,
     @Arg('newPassword') newPassword: string,
-    @Ctx() { redis, em, req }: Context
+    @Ctx() { redis, req }: Context
   ): Promise<UserResponse> {
     if (newPassword.length <= 5) {
       return {
@@ -65,7 +66,8 @@ export class UserResolver {
       };
     }
 
-    const user = await em.findOne(User, { id: +userId });
+    const id = +userId;
+    const user = await User.findOne(id);
 
     if (!user) {
       return {
@@ -78,9 +80,7 @@ export class UserResolver {
       };
     }
 
-    user.password = await argon2.hash(newPassword);
-
-    await em.persistAndFlush(user);
+    await User.update({ id }, { password: await argon2.hash(newPassword) });
     await redis.del(key);
 
     // log in user after password change
@@ -89,11 +89,8 @@ export class UserResolver {
     return { user };
   }
   @Mutation(() => Boolean)
-  async forgotPassword(
-    @Arg('email') email: string,
-    @Ctx() { em, redis }: Context
-  ) {
-    const user = await em.findOne(User, { email });
+  async forgotPassword(@Arg('email') email: string, @Ctx() { redis }: Context) {
+    const user = await User.findOne({ where: { email } });
 
     if (!user) {
       return false;
@@ -119,42 +116,57 @@ export class UserResolver {
   }
 
   @Query(() => User, { nullable: true })
-  async me(@Ctx() { em, req }: Context): Promise<User | null> {
+  async me(@Ctx() { req }: Context): Promise<User | null> {
     if (!req.session.userId) {
       return null;
     }
 
-    return em.findOne(User, { id: req.session.userId });
+    return await User.findOneOrFail(req.session.userId);
   }
 
   @Mutation(() => UserResponse)
   async registerUser(
     @Arg('options') { email, username, password }: UsernamePasswordInput,
-    @Ctx() { em, req }: Context
+    @Ctx() { req }: Context
   ): Promise<UserResponse> {
-    let user = await em.findOne(User, { username });
-
-    if (user) {
-      return {
-        errors: [
-          {
-            field: 'username',
-            message: 'User with this username already exists',
-          },
-        ],
-      };
-    }
-
     const errors = validateRegister({ email, username, password });
     if (errors) {
       return { errors };
     }
 
     const hashedPassword = await argon2.hash(password);
+    let user;
+    try {
+      const result = await getConnection()
+        .createQueryBuilder()
+        .insert()
+        .into(User)
+        .values({
+          username,
+          email,
+          password: hashedPassword,
+        })
+        .returning('*')
+        .execute();
+      user = result.raw[0];
+    } catch (err) {
+      //|| err.detail.includes("already exists")) {
+      // duplicate username error
+      if (err.code === '23505') {
+        return {
+          errors: [
+            {
+              field: 'username',
+              message: 'username already taken',
+            },
+          ],
+        };
+      }
+    }
 
-    user = em.create(User, { email, username, password: hashedPassword });
-    await em.persistAndFlush(user);
-
+    // store user id session
+    // this will set a cookie on the user
+    // keep them logged in
     req.session.userId = user.id;
 
     return { user };
@@ -164,13 +176,12 @@ export class UserResolver {
   async loginUser(
     @Arg('usernameOrEmail') usernameOrEmail: string,
     @Arg('password') password: string,
-    @Ctx() { em, req }: Context
+    @Ctx() { req }: Context
   ): Promise<UserResponse> {
-    const user = await em.findOne(
-      User,
+    const user = await User.findOne(
       usernameOrEmail.includes('@')
-        ? { email: usernameOrEmail }
-        : { username: usernameOrEmail }
+        ? { where: { email: usernameOrEmail } }
+        : { where: { username: usernameOrEmail } }
     );
 
     if (!user) {
