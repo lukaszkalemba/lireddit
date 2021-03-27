@@ -1,5 +1,6 @@
 import express, { Application } from 'express';
 import { createConnection } from 'typeorm';
+import path from 'path';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import { ApolloServer } from 'apollo-server-express';
@@ -17,7 +18,7 @@ import 'reflect-metadata';
 dotenv.config({ path: 'config/config.env' });
 
 const main = async () => {
-  createConnection({
+  const conn = await createConnection({
     type: 'postgres',
     database: 'lireddit',
     username: 'postgres',
@@ -25,7 +26,10 @@ const main = async () => {
     logging: true,
     synchronize: true,
     entities: [Post, User],
+    migrations: [path.join(__dirname, './migrations/*')],
   });
+
+  await conn.runMigrations();
 
   const app: Application = express();
 
