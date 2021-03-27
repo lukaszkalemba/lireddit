@@ -4,12 +4,15 @@ import { withUrqlClient } from 'next-urql';
 import { Box, Button } from '@chakra-ui/react';
 import { createUrqlClient } from 'helpers/createUrqlClient';
 import { useCreatePostMutation } from 'generated/graphql';
+import { useIsAuth } from 'hooks/useIsAuth';
 import Layout from 'components/Layout';
 import InputField from 'components/InputField';
 
 const CreatePost = () => {
   const router = useRouter();
   const [, createPost] = useCreatePostMutation();
+
+  useIsAuth();
 
   return (
     <Layout variant='small'>

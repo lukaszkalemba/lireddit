@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router';
 import NextLink from 'next/link';
 import { withUrqlClient } from 'next-urql';
-import { Formik, Form } from 'formik';
+import { Formik, Form, FormikHelpers } from 'formik';
 import { Box, Button, Flex, Link } from '@chakra-ui/react';
 import { useLoginMutation } from 'generated/graphql';
 import { createUrqlClient } from 'helpers/createUrqlClient';
@@ -9,22 +9,36 @@ import { toErrorMap } from 'helpers/toErrorMap';
 import Wrapper from 'components/Wrapper';
 import InputField from 'components/InputField';
 
+interface Values {
+  usernameOrEmail: string;
+  password: string;
+}
+
 const Login = () => {
   const router = useRouter();
   const [, login] = useLoginMutation();
+
+  const handleSubmit = async (
+    values: Values,
+    { setErrors }: FormikHelpers<Values>
+  ) => {
+    const { data } = await login(values);
+
+    if (data?.loginUser.errors) {
+      setErrors(toErrorMap(data.loginUser.errors));
+      return;
+    }
+
+    typeof router.query.next === 'string'
+      ? router.push(router.query.next)
+      : router.push('/');
+  };
 
   return (
     <Wrapper variant='small'>
       <Formik
         initialValues={{ usernameOrEmail: '', password: '' }}
-        onSubmit={async (values, { setErrors }) => {
-          const { data } = await login(values);
-          if (data?.loginUser.errors) {
-            setErrors(toErrorMap(data.loginUser.errors));
-          } else if (data?.loginUser.user) {
-            router.push('/');
-          }
-        }}
+        onSubmit={(values, actions) => handleSubmit(values, actions)}
       >
         {({ isSubmitting }) => (
           <Form>
