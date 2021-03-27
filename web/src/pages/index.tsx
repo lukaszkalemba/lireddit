@@ -1,5 +1,5 @@
 import NextLink from 'next/link';
-import { Link } from '@chakra-ui/layout';
+import { Link, Stack, Box, Heading, Text } from '@chakra-ui/layout';
 import { withUrqlClient } from 'next-urql';
 import { createUrqlClient } from 'helpers/createUrqlClient';
 import { usePostsQuery } from 'generated/graphql';
@@ -15,7 +15,15 @@ const Index = () => {
       <NextLink href='/create-post'>
         <Link>create post</Link>
       </NextLink>
-      {data && data.posts.map(({ id, title }) => <div key={id}>{title}</div>)}
+      <Stack spacing={8}>
+        {data &&
+          data.posts.map(({ id, title, text }) => (
+            <Box key={id} p={5} shadow='md' borderWidth='1px'>
+              <Heading fontSize='xl'>{title}</Heading>
+              <Text mt={4}>{text}</Text>
+            </Box>
+          ))}
+      </Stack>
     </Layout>
   );
 };
