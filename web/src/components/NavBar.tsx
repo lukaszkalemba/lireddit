@@ -45,7 +45,7 @@ const NavBar = () => {
   }
 
   return (
-    <Flex bg='teal' px='10' py='3'>
+    <Flex position='sticky' top='0' zIndex='1' bg='teal' px='10' py='3'>
       <Box ml='auto'>{body}</Box>
     </Flex>
   );
