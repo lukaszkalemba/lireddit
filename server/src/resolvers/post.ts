@@ -7,7 +7,9 @@ import {
   Field,
   Ctx,
   UseMiddleware,
+  Int,
 } from 'type-graphql';
+import { getConnection } from 'typeorm';
 import { Context } from 'utils/types';
 import { Post } from 'entities/Post';
 import { isAuth } from 'middleware/isAuth';
@@ -23,8 +25,23 @@ class PostInput {
 @Resolver()
 export class PostResolver {
   @Query(() => [Post])
-  async posts(): Promise<Post[]> {
-    return await Post.find();
+  async posts(
+    @Arg('limit', () => Int) limit: number,
+    @Arg('cursor', () => String, { nullable: true }) cursor: string | null
+  ): Promise<Post[]> {
+    const realLimit = Math.min(50, limit);
+
+    const qb = getConnection()
+      .getRepository(Post)
+      .createQueryBuilder('post')
+      .orderBy('"createdAt"')
+      .take(realLimit);
+
+    if (cursor) {
+      qb.where('"createdAt" < :cursor', { cursor: new Date(+cursor) });
+    }
+
+    return qb.getMany();
   }
 
   @Query(() => Post, { nullable: true })
