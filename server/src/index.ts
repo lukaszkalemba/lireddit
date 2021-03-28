@@ -13,6 +13,7 @@ import { PostResolver } from 'resolvers/post';
 import { UserResolver } from 'resolvers/user';
 import { Post } from 'entities/Post';
 import { User } from 'entities/User';
+import { Updoot } from 'entities/Updoot';
 import 'reflect-metadata';
 
 dotenv.config({ path: 'config/config.env' });
@@ -25,7 +26,7 @@ const main = async () => {
     password: 'postgres',
     logging: true,
     synchronize: true,
-    entities: [Post, User],
+    entities: [Post, User, Updoot],
     migrations: [path.join(__dirname, './migrations/*')],
   });
 
