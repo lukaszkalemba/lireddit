@@ -32,7 +32,7 @@ const Index = () => {
 
       <Stack spacing={8}>
         {data &&
-          data.posts.map(({ id, title, textSnippet }) => (
+          data.posts.posts.map(({ id, title, textSnippet }) => (
             <Box key={id} p={5} shadow='md' borderWidth='1px'>
               <Heading fontSize='xl'>{title}</Heading>
               <Text mt={4}>{textSnippet}</Text>
@@ -40,13 +40,13 @@ const Index = () => {
           ))}
       </Stack>
 
-      {data && (
+      {data && data.posts.hasMore && (
         <Flex>
           <Button
             onClick={() => {
               setVariables({
                 limit: variables.limit,
-                cursor: data.posts[data.posts.length - 1].createdAt,
+                cursor: data.posts.posts[data.posts.posts.length - 1].createdAt,
               });
             }}
             isLoading={fetching}
