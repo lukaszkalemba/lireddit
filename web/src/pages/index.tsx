@@ -32,9 +32,10 @@ const Index = () => {
 
       <Stack spacing={8}>
         {data &&
-          data.posts.posts.map(({ id, title, textSnippet }) => (
+          data.posts.posts.map(({ id, title, textSnippet, creator }) => (
             <Box key={id} p={5} shadow='md' borderWidth='1px'>
               <Heading fontSize='xl'>{title}</Heading>
+              <Text>Posted by {creator.username}</Text>
               <Text mt={4}>{textSnippet}</Text>
             </Box>
           ))}
