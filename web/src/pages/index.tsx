@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import NextLink from 'next/link';
 import { Link, Stack, Box, Heading, Text, Flex } from '@chakra-ui/layout';
 import { withUrqlClient } from 'next-urql';
@@ -7,8 +8,13 @@ import Layout from 'components/Layout';
 import { Button } from '@chakra-ui/button';
 
 const Index = () => {
+  const [variables, setVariables] = useState<{
+    limit: number;
+    cursor: string | null;
+  }>({ limit: 10, cursor: null });
+
   const [{ data, fetching }] = usePostsQuery({
-    variables: { limit: 10 },
+    variables,
   });
 
   if (!fetching && !data) {
@@ -36,7 +42,19 @@ const Index = () => {
 
       {data && (
         <Flex>
-          <Button isLoading={fetching} m='auto' my={8} bg='teal' color='white'>
+          <Button
+            onClick={() => {
+              setVariables({
+                limit: variables.limit,
+                cursor: data.posts[data.posts.length - 1].createdAt,
+              });
+            }}
+            isLoading={fetching}
+            m='auto'
+            my={8}
+            bg='teal'
+            color='white'
+          >
             Load more
           </Button>
         </Flex>
