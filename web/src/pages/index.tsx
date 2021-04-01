@@ -2,9 +2,11 @@ import { useState } from 'react';
 import NextLink from 'next/link';
 import { Link, Stack, Box, Heading, Text, Flex } from '@chakra-ui/layout';
 import { Button } from '@chakra-ui/button';
+import { IconButton } from '@chakra-ui/react';
+import { DeleteIcon } from '@chakra-ui/icons';
 import { withUrqlClient } from 'next-urql';
 import { createUrqlClient } from 'helpers/createUrqlClient';
-import { usePostsQuery } from 'generated/graphql';
+import { useDeletePostMutation, usePostsQuery } from 'generated/graphql';
 import Layout from 'components/Layout';
 import UpdootSection from 'components/UpdootSection';
 
@@ -17,6 +19,8 @@ const Index = () => {
   const [{ data, fetching }] = usePostsQuery({
     variables,
   });
+
+  const [, deletePost] = useDeletePostMutation();
 
   if (!fetching && !data) {
     return <div>You got no posts for some reason</div>;
@@ -37,19 +41,36 @@ const Index = () => {
       <Stack spacing={8}>
         {data &&
           data.posts.posts.map((post) => {
+            if (!post) {
+              return null;
+            }
+
             const { id, title, creator, textSnippet } = post;
 
             return (
               <Flex key={id} p={5} shadow='md' borderWidth='1px'>
                 <UpdootSection post={post} />
-                <Box>
+                <Box position='relative' width='100%'>
                   <NextLink href='/post/[id]' as={`/post/${id}`}>
                     <Link>
-                      <Heading fontSize='xl'>{title}</Heading>
+                      <Heading width='75%' fontSize='xl'>
+                        {title}
+                      </Heading>
                     </Link>
                   </NextLink>
-                  <Text>Posted by {creator.username}</Text>
+                  <Text width='75%'>Posted by {creator.username}</Text>
+
                   <Text mt={4}>{textSnippet}</Text>
+                  <IconButton
+                    position='absolute'
+                    right='0'
+                    top='0'
+                    icon={<DeleteIcon />}
+                    aria-label='Delete post'
+                    onClick={async () => {
+                      await deletePost({ id });
+                    }}
+                  />
                 </Box>
               </Flex>
             );
